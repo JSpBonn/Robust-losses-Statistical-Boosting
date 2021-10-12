@@ -1,3 +1,5 @@
+library(mboost)
+
 # Huber:
 AdaptHuber <- function(tau= 0.8213748 , k=NULL , pi=NULL , q = 0.5){ # 95% efficiency: k=1.345 translated to tau=0.8213748
   k_to_tau <- function(k){
