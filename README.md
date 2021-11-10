@@ -8,18 +8,15 @@ Example for linear regression:
 model <- glmboost(y ~ x1 + x2, data= data.frame(y,x1,x2), family=AdaptHuber(tau=0.8))
 
 Overview adaptive loss functions:
-AdaptHuber
-AdaptBisquare
-AdaptWelsh
-AdaptNonnegativeGarrote
-AdaptCauchy
+AdaptHuber, AdaptBisquare, AdaptWelsh, AdaptNonnegativeGarrote, AdaptCauchy
 
 E.g. for non-adaptive loss functions:
-Gaussian   (default for glmboost)
-Laplace
+Gaussian (default for glmboost), Laplace
 
 
 ```{r }
+# R code for running an example on a bodyfat data set with different covariates:
+
 source{Robust_quantile_based_adaptive_loss_functions_for_statistical_boosting.R} # loading adaptive loss functions and R-Package "mboost"
 data("bodyfat", package = "TH.data") # load bodyfat data
 
