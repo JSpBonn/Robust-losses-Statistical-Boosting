@@ -17,3 +17,37 @@ AdaptCauchy
 E.g. for non-adaptive loss functions:
 Gaussian   (default for glmboost)
 Laplace
+
+
+```{r }
+source{Robust_quantile_based_adaptive_loss_functions_for_statistical_boosting.R} # loading adaptive loss functions and R-Package "mboost"
+data("bodyfat", package = "TH.data") # load bodyfat data
+
+# outcome: DEXfat
+# all available covariates (age + waistcirc + hipcirc + elbowbreadth + kneebreadth + anthro3a + anthro3b + anthro3c + anthro4)
+set.seed(321)
+glm_Huber <- glmboost(DEXfat~. , family = AdaptHuber(tau=0.80) , data = bodyfat)
+cvr_H <- cvrisk(glm_Huber,grid = 1:200) # default method is 25-fold bootstrap
+coef(glm_Huber[mstop(cvr_H)] , off2int=TRUE , which="") #  coefficients of glm_Huber at optimal stopping iteration for cvrisk
+
+set.seed(321)
+glm_Bisquare <- glmboost(DEXfat~. , family = AdaptBisquare(tau=0.99) , data=bodyfat)
+cvr_B <- cvrisk(glm_Bisquare,grid = 1:200) # default method is 25-fold bootstrap
+coef(glm_Bisquare[mstop(cvr_B)] , off2int=TRUE , which="")  # coefficients of glm_Bisquare at optimal stopping iteration for cvrisk
+
+plot(glm_Huber,ylim=c(-2,5))
+plot(glm_Bisquare,ylim=c(-2,5))
+
+
+# for specific covariates:
+set.seed(321)
+glm_Huber_2 <- glmboost(DEXfat ~ age + waistcirc + hipcirc , family = AdaptHuber(tau=0.8) , data = bodyfat) 
+#cvr_H_2 <- cvrisk(glm_Huber_2,grid = 1:500) # default method is 25-fold bootstrap
+#coef(glm_Huber[mstop(cvr_H)],off2int=TRUE)
+
+set.seed(321)
+glm_Bisquare_2 <- glmboost(DEXfat ~ age + waistcirc + hipcirc , family = AdaptBisquare(tau=0.99) , data=bodyfat)
+#cvr_B_2 <- cvrisk(glm_Bisquare_2,grid = 1:500) # default method is 25-fold bootstrap
+#coef(glm_Bisquare_2[mstop(cvr_B_2)],off2int=TRUE)
+
+```
