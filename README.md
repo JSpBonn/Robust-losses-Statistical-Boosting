@@ -40,7 +40,7 @@ plot(glm_Bisquare,ylim=c(-2,5))
 set.seed(321)
 glm_Huber_2 <- glmboost(DEXfat ~ age + waistcirc + hipcirc , family = AdaptHuber(tau=0.8) , data = bodyfat) 
 #cvr_H_2 <- cvrisk(glm_Huber_2,grid = 1:500) # default method is 25-fold bootstrap
-#coef(glm_Huber[mstop(cvr_H)],off2int=TRUE)
+#coef(glm_Huber_2[mstop(cvr_H_2)],off2int=TRUE)
 
 set.seed(321)
 glm_Bisquare_2 <- glmboost(DEXfat ~ age + waistcirc + hipcirc , family = AdaptBisquare(tau=0.99) , data=bodyfat)
