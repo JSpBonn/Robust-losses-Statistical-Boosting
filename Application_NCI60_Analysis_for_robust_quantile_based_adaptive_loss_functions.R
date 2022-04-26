@@ -4,7 +4,7 @@ library(glmnet) # normal lasso using glmnet
 library(quantreg) # robust lasso using R function: "rq(, method="lasso")" (corresponding to function "rq.fit.lasso")
 
 #setwd("//folderapplication")
-source{Robust_quantile_based_adaptive_loss_functions_for_statistical_boosting.R} # loading adaptive loss functions and R-Package "mboost"
+source(Robust_quantile_based_adaptive_loss_functions_for_statistical_boosting.R) # loading adaptive loss functions and R-Package "mboost"
 
 #setwd("//folderapplication")
 load(data_set_application.RData) # the loaded data is called: "data_set" 
@@ -130,19 +130,19 @@ for (i in 1:number_cancer_cell_lines) {
   print(i)
 }
 
-#setwd("//folderapplication")
-#save(time_matrix,file="time_matrix.RData")
-#save(errormatrix,file="errormatrix.RData")
-#save(mstopmatrix,file="mstopmatrix.RData")
+# setwd("//folderapplication")
+# save(time_matrix,file="time_matrix.RData")
+# save(errormatrix,file="errormatrix.RData")
+# save(mstopmatrix,file="mstopmatrix.RData")
 
-#save(matrix_Gaussian,file="matrix_Gaussian.RData")
-#save(matrix_Hub_2,file="matrix_Hub_2.RData")
-#save(matrix_Hub_1,file="matrix_Hub_1.RData")
-#save(matrix_Hub_def,file="matrix_Hub_def.RData")
-#save(matrix_Bis_def,file="matrix_Bis_def.RData")
-#save(matrix_Bis_0.95,file="matrix_Bis_0.95.RData")
-#save(matrix_Bis_0.90,file="matrix_Bis_0.90.RData")
-#save(matrix_Laplace,file="matrix_Laplace.RData")
+# save(matrix_Gaussian,file="matrix_Gaussian.RData")
+# save(matrix_Hub_2,file="matrix_Hub_2.RData")
+# save(matrix_Hub_1,file="matrix_Hub_1.RData")
+# save(matrix_Hub_def,file="matrix_Hub_def.RData")
+# save(matrix_Bis_def,file="matrix_Bis_def.RData")
+# save(matrix_Bis_0.95,file="matrix_Bis_0.95.RData")
+# save(matrix_Bis_0.90,file="matrix_Bis_0.90.RData")
+# save(matrix_Laplace,file="matrix_Laplace.RData")
 
 # # summary of results:
 # MAE_methods <- matrix(0,ncol=8)
@@ -272,7 +272,3 @@ for (i in 1:number_cancer_cell_lines) {
 # # mean_number_selected_lasso_L1 
 # SD_number_selected_lasso_L1 <- sd(number_selected_lasso_L1)
 # # SD_number_selected_lasso_L1 
-# 
-
-
-
