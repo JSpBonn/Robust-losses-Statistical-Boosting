@@ -6,6 +6,9 @@ library(mvtnorm)
 library(mboost)
 library(parallel)
 
+library(quantreg)
+library(glmnet)
+
 source(Robust_quantile_based_adaptive_loss_functions_for_statistical_boosting.R) # loading the adaptive loss functions
 
 ###############################################################################
@@ -67,8 +70,22 @@ Simfunc <- function(id,p=10,n=200){
     sigma_e =sigma
     y = rnorm(n,Summe, sigma_e)
     sigma_ver <- 4
+    
+    # Toeplitz correlation structure:
+    
+    
+    
+    
+    # symmetric corruption:
     if(numbercorrupted[i]>0) y[1:numbercorrupted[i]] <-  y[1:numbercorrupted[i]]+rnorm(numbercorrupted[i],0,sigma_ver) ### YYY non-systematic corruption, comment for systematic corruption, choose only one type of corruption
     # if(numbercorrupted[i]>0) y[1:numbercorrupted[i]] <- y[1:numbercorrupted[i]]+cor_strong*sd(y)*(-1)^rbinom(numbercorrupted[i], size=1, prob=0.5) ### YYY systematic corruption, uncomment for systematic corruption, choose only one type of corruption
+    
+    # non-symmetric corruption:
+    # if(numbercorrupted[i]>0) y[1:numbercorrupted[i]] <-  y[1:numbercorrupted[i]]+ abs(rnorm(numbercorrupted[i],0,sigma_ver)) ### YYY non-symmetric, non-systematic corruption, comment for systematic corruption, choose only one type of corruption
+    # if(numbercorrupted[i]>0) y[1:numbercorrupted[i]] <- y[1:numbercorrupted[i]]+cor_strong*sd(y) ### YYY non-symmetric, systematic corruption, comment for non-systematic corruption, choose only one type of corruption
+    
+    
+    
     datasimulation <- data.frame(y,X)
     
     
@@ -87,16 +104,16 @@ Simfunc <- function(id,p=10,n=200){
     
     
     ####################################################################################################################
-    rlm_fit <- rlm(y~.,data=datasimulation,maxit=100) ### XXX comment for high dimensional setting
-    lm_fit <- lm(y~.,data=datasimulation) ### XXX comment for high dimensional setting
-    rlm_bisquare <- rlm(y~.,method="MM" ,data=datasimulation,maxit=100) ### XXX comment high dimensional setting
+    rlm_fit <- rlm(y~.,data=datasimulation,maxit=100) ### XXX comment for (ultra) high dimensional setting
+    lm_fit <- lm(y~.,data=datasimulation) ### XXX comment for (ultra) high dimensional setting
+    rlm_bisquare <- rlm(y~.,method="MM" ,data=datasimulation,maxit=100) ### XXX (ultra) comment high dimensional setting
     
-    coefmatrix_rlm <- matrix(0,ncol=p+1,nrow=1) ### XXX comment for high dimensional setting
-    coefmatrix_rlm <- rlm_fit$coefficients ### XXX comment for high dimensional setting
-    coefmatrix_lm <- matrix(0,ncol=p+1,nrow=1) ### XXX comment for high dimensional setting
+    coefmatrix_rlm <- matrix(0,ncol=p+1,nrow=1) ### XXX comment for (ultra) high dimensional setting
+    coefmatrix_rlm <- rlm_fit$coefficients ### XXX comment for (ultra) high dimensional setting
+    coefmatrix_lm <- matrix(0,ncol=p+1,nrow=1) ### XXX comment for (ultra) high dimensional setting
     coefmatrix_lm <- lm_fit$coefficients ### XXX comment high dimensional setting
-    coefmatrix_bisquare <- matrix(0,ncol=p+1,nrow=1) ### XXX comment for high dimensional setting
-    coefmatrix_bisquare <- rlm_bisquare$coefficients ### XXX comment for high dimensional setting
+    coefmatrix_bisquare <- matrix(0,ncol=p+1,nrow=1) ### XXX comment for (ultra) high dimensional setting
+    coefmatrix_bisquare <- rlm_bisquare$coefficients ### XXX comment for (ultra) high dimensional setting
     ####################################################################################################################
     
     # save also estimates, which are "converged"
@@ -259,7 +276,9 @@ Simfunc <- function(id,p=10,n=200){
     
   }# end of loop over i
   save(out.tab=out.tab,file = file.path("//home/XXX.../50to200",paste(id,"simulationsERG", "par",p,"observ",n, "sim.RData",sep="_")))
-  # save(out.tab=out.tab,file = file.path("//home/XXX.../500to400",paste(id,"simulationsERG", "par",p,"observ",n, "sim.RData",sep="_"))) ### XXX uncomment for high dimensional setting
+  # save(out.tab=out.tab,file = file.path("//home/XXX.../500to400",paste(id,"simulationsERG", "par",p,"observ",n, "sim.RData",sep="_"))) ### XXX uncomment for (ultra) high dimensional setting
+  # save(out.tab=out.tab,file = file.path("//home/XXX.../15000to200",paste(id,"simulationsERG", "par",p,"observ",n, "sim.RData",sep="_"))) ### XXX uncomment for (ultra) high dimensional setting
+ 
   return(out.tab)
   # every out.tab is for one id of the loop
 }
@@ -268,19 +287,25 @@ Simfunc <- function(id,p=10,n=200){
 
 # chose simulation setting:
 # low dimensional:
-p =50 ### XXX comment for high dimensional setting
-n=200 ### XXX comment for high dimensional setting
+p =50 ### XXX comment for (ultra) high dimensional setting
+n=200 ### XXX comment for (ultra) high dimensional setting
 
 # high dimensional:
 # take care: some matrices are not going to work for this case (classical regression estimates), look for "XXX uncomment/comment for high dimensional setting" in the code above
 # p=500 ### XXX uncomment for high dimensional setting
 # n=400 ### XXX uncomment for high dimensional setting
 
-id <-1:100 # 100 runs, id is specific run 
+# ultra high dimensional:
+# take care: some matrices are not going to work for this case (classical regression estimates), look for "XXX uncomment/comment for (ultra) high dimensional setting" in the code above
+# take care: computational issues in the data generating process, we recommand to generate blocks of 5000 or even better blocks of 1000 for this setting, look for "ZZZ uncomment/comment for ultra high dimensional setting" in code above
+# p=15000 XXX uncomment for ultra high dimensional setting
+# n=200 XXX uncomment for ultra high dimensional setting
+
+id <-1:1000 # 1000 runs, id is specific run 
 
 
 
-# choose low or high dimensional setting (uncomment/comment XXX) and choose systematic or unsystematic corruption (uncomment/comment YYY) 
+# choose low or high or ultra high dimensional setting (uncomment/comment XXX) and choose (symmetric/non-symmetric) systematic or unsystematic corruption (uncomment/comment YYY) 
 ERG <- mclapply(id,FUN=Simfunc,n=n,p=p,mc.cores =25,mc.set.seed = TRUE,  mc.preschedule = FALSE) # parallel setting for cluster (here 25 cores used)
 
 
