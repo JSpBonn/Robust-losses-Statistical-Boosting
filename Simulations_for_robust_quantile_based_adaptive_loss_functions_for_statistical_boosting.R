@@ -33,10 +33,17 @@ ktau_func <- function(k){
 Simfunc <- function(id,p=10,n=200){
   # at least p=6 due to number of informative variables
   
-  corrupted = c(0.0,0.01,0.025,0.05,0.075,0.1,0.15,0.2,0.25,0.3,0.35,0.4,0.45,0.5) # amount of corruption
+  corrupted = c(0.0,0.075,0.15) # amount of corruption
   mu = 0 
   sigma = 1 
-  correl = 0.5 # correlation of all covariables
+  correl = 0.5 # correlation of all covariables, uncomment for Toeplitz
+  # Toeplitz:
+  # corr=0.8 # Toeplitz correlation between neighboured predictor variables, comment for Toeplitz
+  # help = numeric(p) comment for Toeplitz
+  # for (k in 1:p){ help[k]=corr^(k-1) comment for Toeplitz
+  # } comment for Toeplitz
+  # toeplitzcor = stats::toeplitz(help) comment for Toeplitz
+  
   cor_strong = 4 # how large is the corruption? (4 sigma)
   informative_beta = c(1.5,1,0.5,-0.5,-1,-1.5)
   m_stop =3000 # maximal stopping iteration
@@ -61,7 +68,8 @@ Simfunc <- function(id,p=10,n=200){
     beta <- c(informative_beta,rep(0,p-t))
     
     mean_X = rep(mu,length = p)
-    sigma_X = matrix(correl,p,p)
+    sigma_X = matrix(correl,p,p) # comment for Toeplitz
+    # sigma_X = matrix(toeplitzcor,p,p) # uncomment for Toeplitz
     diag(sigma_X) = sigma
     
     # trainingsdata
@@ -69,12 +77,8 @@ Simfunc <- function(id,p=10,n=200){
     Summe  = X %*% beta
     sigma_e =sigma
     y = rnorm(n,Summe, sigma_e)
-    sigma_ver <- 4
-    
-    # Toeplitz correlation structure:
-    
-    
-    
+    sigma_ver <- 4  
+       
     
     # symmetric corruption:
     if(numbercorrupted[i]>0) y[1:numbercorrupted[i]] <-  y[1:numbercorrupted[i]]+rnorm(numbercorrupted[i],0,sigma_ver) ### YYY non-systematic corruption, comment for systematic corruption, choose only one type of corruption
@@ -92,7 +96,8 @@ Simfunc <- function(id,p=10,n=200){
     # testdata
     set.seed(i*1000+50000+id)
     mean_X_test = rep(mu,length = p)
-    sigma_X_test = matrix(correl,p,p)
+    sigma_X_test = matrix(correl,p,p) # comment for Toeplitz
+    # sigma_X_test = toeplitzcor # uncomment for Toeplitz
     diag(sigma_X_test) = sigma
     X_test = rmvnorm(n_2,mean = mean_X_test, sigma = sigma_X_test)
     Summe_test  = X_test %*% beta
@@ -295,17 +300,39 @@ n=200 ### XXX comment for (ultra) high dimensional setting
 # p=500 ### XXX uncomment for high dimensional setting
 # n=400 ### XXX uncomment for high dimensional setting
 
+
 # ultra high dimensional:
 # take care: some matrices are not going to work for this case (classical regression estimates), look for "XXX uncomment/comment for (ultra) high dimensional setting" in the code above
-# take care: computational issues in the data generating process, we recommand to generate blocks of 5000 or even better blocks of 1000 for this setting, look for "ZZZ uncomment/comment for ultra high dimensional setting" in code above
 # p=15000 XXX uncomment for ultra high dimensional setting
 # n=200 XXX uncomment for ultra high dimensional setting
+# # take care: computational issues in the data generating process, we recommand to generate blocks of 1000x1000 for this setting and also to remove all you do not need to save memory:
+
+# # Adjust/ Add this to your code for ultra high dimensional:
+#  p_2 <- p/15
+# mean_X = rep(mu,length = p_2)
+# sigma_X = matrix(correl,p_2,p_2) # or for Toeplitz: matrix(toeplitzcor,p_2,p_2)
+# diag(sigma_X)=sigma
+# # trainingsdata
+# X1 = rmvnorm(n,mean = mean_X, sigma = sigma_X)
+# ...
+# X15 = rmvnorm(n,mean = mean_X, sigma = sigma_X)
+# X=cbind(X1,...,X15)
+# testdata
+# mean_X_test = rep(mu,length = p_2)
+# sigma_X_test = matrix(correl,p_2,p_2) # or for Toeplitz:  matrix(toeplitzcor,p_2,p_2)
+# diag(sigma_X_test) = sigma
+# X_test1 = rmvnorm(n_2,mean = mean_X_test, sigma = sigma_X_test)
+# ...
+# X_test15 = rmvnorm(n_2,mean = mean_X_test, sigma = sigma_X_test)
+# X_test=cbind(X_test1,...,X_test15)
+
+
 
 id <-1:1000 # 1000 runs, id is specific run 
 
 
 
-# choose low or high or ultra high dimensional setting (uncomment/comment XXX) and choose (symmetric/non-symmetric) systematic or unsystematic corruption (uncomment/comment YYY) 
+# choose low or high or ultra high dimensional setting (uncomment/comment XXX) and choose (symmetric/non-symmetric) systematic or unsystematic corruption (uncomment/comment YYY) and choose symmetric correlation or Toeplitz correlation structure (uncomment/comment for Toeplitz)
 ERG <- mclapply(id,FUN=Simfunc,n=n,p=p,mc.cores =25,mc.set.seed = TRUE,  mc.preschedule = FALSE) # parallel setting for cluster (here 25 cores used)
 
 
