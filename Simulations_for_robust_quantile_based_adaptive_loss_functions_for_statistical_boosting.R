@@ -88,8 +88,6 @@ Simfunc <- function(id,p=10,n=200){
     # if(numbercorrupted[i]>0) y[1:numbercorrupted[i]] <-  y[1:numbercorrupted[i]]+ abs(rnorm(numbercorrupted[i],0,sigma_ver)) ### YYY non-symmetric, non-systematic corruption, comment for systematic corruption, choose only one type of corruption
     # if(numbercorrupted[i]>0) y[1:numbercorrupted[i]] <- y[1:numbercorrupted[i]]+cor_strong*sd(y) ### YYY non-symmetric, systematic corruption, comment for non-systematic corruption, choose only one type of corruption
     
-    
-    
     datasimulation <- data.frame(y,X)
     
     
@@ -108,10 +106,26 @@ Simfunc <- function(id,p=10,n=200){
     names(datasimulation_test) <- names(datasimulation)
     
     
+    
+    # number_methods <-13 # running time
+    # time_matrix <- matrix(0,ncol = 2,nrow = number_methods) 
+    # time_matrix[,1] <- c("rlm_huber","lm","rlm_bisquare","Huber_def","Huber_k1","Huberk2","Bisquare0_99","Bisquare0_95","Bisquare0_90","L1_boost","L2_boost","lassoquantreg","lasso")
+    
+    
     ####################################################################################################################
+    # time_a <-proc.time()[3] 
     rlm_fit <- rlm(y~.,data=datasimulation,maxit=100) ### XXX comment for (ultra) high dimensional setting
+    # time_b <- proc.time()[3]
+    # time_matrix[1,2] <- time_b-time_a  
+    
+    # time_a <-proc.time()[3]
     lm_fit <- lm(y~.,data=datasimulation) ### XXX comment for (ultra) high dimensional setting
+    # time_b <- proc.time()[3] 
+    # time_matrix[2,2] <- time_b-time_a
+    
+    # time_a <-proc.time()[3]
     rlm_bisquare <- rlm(y~.,method="MM" ,data=datasimulation,maxit=100) ### XXX (ultra) comment high dimensional setting
+    # time_matrix[3,2] <- time_b-time_a
     
     coefmatrix_rlm <- matrix(0,ncol=p+1,nrow=1) ### XXX comment for (ultra) high dimensional setting
     coefmatrix_rlm <- rlm_fit$coefficients ### XXX comment for (ultra) high dimensional setting
@@ -151,10 +165,12 @@ Simfunc <- function(id,p=10,n=200){
     # Huber default:
     set.seed(i*1000+150000+id)
     tau_huber <- 0.8213748 # default huber 
+    # time_a <-proc.time()[3]
     boost_Huber             <- glmboost(y~.,family=AdaptHuber(tau=tau_huber),control = boost_control(mstop=1),data=datasimulation)
     cvr_boost_Huber         <- cvrisk(boost_Huber,grid = 1:m_stop,papply="lapply")
     if(mstop(cvr_boost_Huber)>m_stop-50) cvr_boost_Huber <- cvrisk(boost_Huber,grid = 1:8000,papply="lapply")
-    
+    # time_b <- proc.time()[3]
+    # time_matrix[4,2] <- time_b-time_a 
     MAEHub[1,1] <- mean(abs(predict(boost_Huber[mstop(cvr_boost_Huber)],newdata=datasimulation_test)-datasimulation_test$y))
     
     coeffmatrix_optistophub[1,] <- coef(boost_Huber[mstop(cvr_boost_Huber)],which="",off2int=TRUE)
@@ -168,7 +184,8 @@ Simfunc <- function(id,p=10,n=200){
     boost_Huber             <- glmboost(y~.,family=AdaptHuber(tau=tau_huber),control = boost_control(mstop=1),data=datasimulation)
     cvr_boost_Huber         <- cvrisk(boost_Huber,grid = 1:m_stop,papply="lapply")
     if(mstop(cvr_boost_Huber)>m_stop-50) cvr_boost_Huber <- cvrisk(boost_Huber,grid = 1:8000,papply="lapply")
-    
+    # time_b <- proc.time()[3]
+    # time_matrix[5,2] <- time_b-time_a
     MAEHub[1,2] <- mean(abs(predict(boost_Huber[mstop(cvr_boost_Huber)],newdata=datasimulation_test)-datasimulation_test$y))
     
     coeffmatrix_optistophub[2,] <- coef(boost_Huber[mstop(cvr_boost_Huber)],which="",off2int=TRUE)
@@ -178,11 +195,13 @@ Simfunc <- function(id,p=10,n=200){
     
     # Huber k=2
     set.seed(i*1000+150000+id)
-    tau_huber <-tau2[3]    
+    tau_huber <-tau2[3]
+    # time_a <-proc.time()[3]
     boost_Huber             <- glmboost(y~.,family=AdaptHuber(tau=tau_huber),control = boost_control(mstop=1),data=datasimulation)
     cvr_boost_Huber         <- cvrisk(boost_Huber,grid = 1:m_stop,papply="lapply")
     if(mstop(cvr_boost_Huber)>m_stop-50) cvr_boost_Huber <- cvrisk(boost_Huber,grid = 1:8000,papply="lapply")
-    
+    # time_b <- proc.time()[3]
+    # time_matrix[6,2] <- time_b-time_a
     MAEHub[1,3] <- mean(abs(predict(boost_Huber[mstop(cvr_boost_Huber)],newdata=datasimulation_test)-datasimulation_test$y))
     
     coeffmatrix_optistophub[3,] <- coef(boost_Huber[mstop(cvr_boost_Huber)],which="",off2int=TRUE)
@@ -195,11 +214,12 @@ Simfunc <- function(id,p=10,n=200){
     # bisquare default:
     set.seed(i*1000+250000+id)
     tau_bisquare <- 0.99
-    
+    # time_a <-proc.time()[3]
     boost_bisquare        <- glmboost(y~.,family=AdaptBisquare(tau=tau_bisquare),control = boost_control(mstop=1),data=datasimulation)
     cvr_boost_bisquare     <- cvrisk(boost_bisquare,grid = 1:m_stop,papply="lapply")
     if(mstop(cvr_boost_bisquare)>m_stop-50) cvr_boost_bisquare <- cvrisk(boost_bisquare,grid = 1:8000,papply="lapply")
-    
+    # time_b <- proc.time()[3]
+    # time_matrix[7,2] <- time_b-time_a
     MAEBis[1,1] <- mean(abs(predict(boost_bisquare[mstop(cvr_boost_bisquare)],newdata=datasimulation_test)-datasimulation_test$y))
     
     coeffmatrix_optistopbis[1,] <- coef(boost_bisquare[mstop(cvr_boost_bisquare)],which="",off2int=TRUE)
@@ -210,10 +230,12 @@ Simfunc <- function(id,p=10,n=200){
     ##############################
     set.seed(i*1000+250000+id)
     tau_bisquare <- 0.95
+    # time_a <-proc.time()[3]
     boost_bisquare        <- glmboost(y~.,family=AdaptBisquare(tau=tau_bisquare),control = boost_control(mstop=1),data=datasimulation)
     cvr_boost_bisquare     <- cvrisk(boost_bisquare,grid = 1:m_stop,papply="lapply")
     if(mstop(cvr_boost_bisquare)>m_stop-50) cvr_boost_bisquare <- cvrisk(boost_bisquare,grid = 1:8000,papply="lapply")
-    
+    # time_b <- proc.time()[3]
+    # time_matrix[8,2] <- time_b-time_a
     MAEBis[1,2] <- mean(abs(predict(boost_bisquare[mstop(cvr_boost_bisquare)],newdata=datasimulation_test)-datasimulation_test$y))
     
     coeffmatrix_optistopbis[2,] <- coef(boost_bisquare[mstop(cvr_boost_bisquare)],which="",off2int=TRUE)
@@ -224,10 +246,12 @@ Simfunc <- function(id,p=10,n=200){
     ###############################
     set.seed(i*1000+250000+id)
     tau_bisquare <- 0.9
+    # time_a <-proc.time()[3]
     boost_bisquare        <- glmboost(y~.,family=AdaptBisquare(tau=tau_bisquare),control = boost_control(mstop=1),data=datasimulation)
     cvr_boost_bisquare     <- cvrisk(boost_bisquare,grid = 1:m_stop,papply="lapply")
     if(mstop(cvr_boost_bisquare)>m_stop-50) cvr_boost_bisquare <- cvrisk(boost_bisquare,grid = 1:8000,papply="lapply")
-    
+    # time_b <- proc.time()[3]
+    # time_matrix[9,2] <- time_b-time_a
     MAEBis[1,3] <- mean(abs(predict(boost_bisquare[mstop(cvr_boost_bisquare)],newdata=datasimulation_test)-datasimulation_test$y))
     
     coeffmatrix_optistopbis[3,] <- coef(boost_bisquare[mstop(cvr_boost_bisquare)],which="",off2int=TRUE)
@@ -238,15 +262,19 @@ Simfunc <- function(id,p=10,n=200){
     ###############################
     # Laplace and Gaussian
     set.seed(i*1000+250000+id+10400)
+    # time_a <-proc.time()[3]
     boost_laplace           <- glmboost(y~.,family=Laplace(),control = boost_control(mstop=1),data=datasimulation)
     cvr_boost_laplace       <- cvrisk(boost_laplace,grid = 1:m_stop,papply="lapply")
     if(mstop(cvr_boost_laplace)>m_stop-50) cvr_boost_laplace <- cvrisk(boost_laplace,grid = 1:8000,papply="lapply")
-    
+    # time_b <- proc.time()[3]
+    # time_matrix[10,2] <- time_b-time_a
     set.seed(i*1000+250000+id+10600)
+    # time_a <-proc.time()[3]
     boost_ls                <- glmboost(y~.,control = boost_control(mstop=1),data=datasimulation)
     cvr_boost_ls            <- cvrisk(boost_ls,grid = 1:m_stop,papply="lapply")
     if(mstop(cvr_boost_ls)>m_stop-50) cvr_boost_ls <- cvrisk(boost_ls,grid = 1:8000,papply="lapply")
-    
+    # time_b <- proc.time()[3]
+    # time_matrix[11,2] <- time_b-time_a
     # save estimated coefficients
     coeffmatrix_rest[3,] <- coef(boost_laplace[mstop(cvr_boost_laplace)],which="",off2int=TRUE)
     coeffmatrix_rest[4,] <- coef(boost_ls[mstop(cvr_boost_ls)],which="",off2int=TRUE)
@@ -259,6 +287,37 @@ Simfunc <- function(id,p=10,n=200){
     colnames(MAERest) <- c("empty","empty2","MAE_lapl","MAE_ls")
     
     cvr_rest <- c(0,0,mstop(cvr_boost_laplace),mstop(cvr_boost_ls))
+    
+    ################################
+    
+    set.seed(i*1000+250000+id+108000)
+    # lasso robust, not sparse: take care about memory issues for ultra high dimensional
+    # time_a <- proc.time()[3]
+    f_lasso <- rq(y ~ .,data=datasimulation, method="lasso")
+    # time_b <- proc.time()[3]
+    # time_matrix[12,2] <- time_b-time_a
+    
+    set.seed(i*1000+250000+id+208000)
+    # lasso (classical)
+    # time_a <- proc.time()[3]
+    mod_cv <- cv.glmnet(x=as.matrix(datasimulation[,c(2:c(p+1))]), y=datasimulation$y, family="gaussian")
+    Lasso_beta = coef(mod_cv, mod_cv$lambda.min) 
+    # time_b <- proc.time()[3] 
+    # time_matrix[13,2] <- time_b-time_a 
+       
+    
+    lasso_coef_vector <- as.vector(Lasso_beta)
+    
+    MAE_lasso <- matrix(0,ncol = 1,nrow=2)
+    MAE_lasso[1,1] <- mean(abs(predict(f_lasso,newdata=datasimulation_test[,2:c(p+1)])-datasimulation_test$y))
+    
+    sim_dat <- as.data.frame(matrix(0,ncol=p+1,nrow = n_2))
+    sim_dat[,1] <- 1
+    sim_dat[,c(2:c(p+1))] <- datasimulation_test[,c(2:c(p+1))]
+    
+    lasso_vec_error <- rep(0,n_2)
+    for (j in 1:n_2) {lasso_vec_error[j] <- sum(sim_dat[j,]*as.vector(Lasso_beta))}
+    MAE_lasso[2,1] <- mean(abs(lasso_vec_error -datasimulation_test[,1]))
     
     # save results depending on loop over i, the index of the amount of corruption in the data
     out.tab[[i]] <- list(corrupted = corrupted[i],id=id,
@@ -277,9 +336,12 @@ Simfunc <- function(id,p=10,n=200){
                          MAEHub=MAEHub,
                          MAEBis=MAEBis,
                          MAERest=MAERest
+                         # time_matrix=time_matrix,
+                         lasso_coef_vector=lasso_coef_vector,
+                         MAE_lasso=MAE_lasso
                          ) 
     
-  }# end of loop over i
+  } # end of loop over i
   save(out.tab=out.tab,file = file.path("//home/XXX.../50to200",paste(id,"simulationsERG", "par",p,"observ",n, "sim.RData",sep="_")))
   # save(out.tab=out.tab,file = file.path("//home/XXX.../500to400",paste(id,"simulationsERG", "par",p,"observ",n, "sim.RData",sep="_"))) ### XXX uncomment for (ultra) high dimensional setting
   # save(out.tab=out.tab,file = file.path("//home/XXX.../15000to200",paste(id,"simulationsERG", "par",p,"observ",n, "sim.RData",sep="_"))) ### XXX uncomment for (ultra) high dimensional setting
