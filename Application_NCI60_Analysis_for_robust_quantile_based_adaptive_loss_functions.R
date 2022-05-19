@@ -7,7 +7,7 @@ library(quantreg) # robust lasso using R function: "rq(, method="lasso")" (corre
 source(Robust_quantile_based_adaptive_loss_functions_for_statistical_boosting.R) # loading adaptive loss functions and R-Package "mboost"
 
 #setwd("//folderapplication")
-load(data_set_application.RData) # the loaded data is called: "data_set" 
+load(data_set_application.RData) # the loaded data is called: "data_set_application" 
 
 
 #########################################################################################
