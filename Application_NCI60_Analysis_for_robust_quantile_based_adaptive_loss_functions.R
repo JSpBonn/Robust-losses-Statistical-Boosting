@@ -2,6 +2,7 @@
 #library(parallel)
 library(glmnet) # normal lasso using glmnet
 library(quantreg) # robust lasso using R function: "rq(, method="lasso")" (corresponding to function "rq.fit.lasso")
+library(robustHD) # different other (robust) methods: rgrplars, sparseLTS, rlars...
 
 #setwd("//folderapplication")
 source(Robust_quantile_based_adaptive_loss_functions_for_statistical_boosting.R) # loading adaptive loss functions and R-Package "mboost"
@@ -234,7 +235,7 @@ for (i in 1:number_cancer_cell_lines) {
 
 error_lasso_L1 <- rep(0,number_cancer_cell_lines)
 time_lasso_L1 <- rep(0,number_cancer_cell_lines)
-coef_matrix <- matrix(0,nrow = number_cancer_cell_lines,ncol = p+1)
+coef_matrix_L1 <- matrix(0,nrow = number_cancer_cell_lines,ncol = p+1)
 number_selected_lasso_L1 <- rep(0,number_cancer_cell_lines)  # all variables get an update
 
 
@@ -247,7 +248,7 @@ for (i in 1:number_cancer_cell_lines) {
   time_b <- proc.time()[3]
   time_lasso_L1[i] <- time_b-time_a
   
-  coef_matrix[i,] <- f_lasso$coefficients
+  coef_matrix_L1[i,] <- f_lasso$coefficients
   error_lasso_L1[i] <- predict(f_lasso,newdata=data_set[i,])-data_set[i,1]
   
   print(i)
@@ -265,10 +266,90 @@ for (i in 1:number_cancer_cell_lines) {
 # # the robust lasso will always estimate all coefficients:
 # # number of coefficients < 0.00001:
 # for (i in 1:number_cancer_cell_lines) {
-#   number_selected_lasso_L1[i] <- sum(abs(coef_matrix[i,2:14952])>0.00001)
+#   number_selected_lasso_L1[i] <- sum(abs(coef_matrix_L1[i,2:14952])>0.00001)
 # }
 # 
 # mean_number_selected_lasso_L1 <- mean(number_selected_lasso_L1)
 # # mean_number_selected_lasso_L1 
 # SD_number_selected_lasso_L1 <- sd(number_selected_lasso_L1)
 # # SD_number_selected_lasso_L1 
+
+
+#########################################################################################
+
+
+# sparseLTS 
+
+error_sparseLTS <- rep(0,number_cancer_cell_lines)
+time_sparseLTS <- rep(0,number_cancer_cell_lines)
+number_selected_sparseLTS <- rep(0,number_cancer_cell_lines) 
+
+for (i in 1:number_cancer_cell_lines) {
+  set.seed(1000+i)
+  X=data_set[-i,2:c(p+1)]
+  KRT19_protein=data_set[-i,1]
+  time_a<-proc.time()[3]
+  first_sparse_LTS <- sparseLTS(x=X,y=KRT19_protein)
+  time_b <- proc.time()[3]
+  time_sparseLTS[i] <- time_b-time_a
+  
+ error_sparseLTS[i] <- predict(first_sparse_LTS,newdata = data_set[i,2:c(p+1)])-KRT19_protein[i]
+ number_selected_sparseLTS[i] <- sum(coef(first_sparseLTS)[2:c(p+1)]!=0)
+  print(i)
+}
+ # 
+# MAE_sparseLTS <- mean(abs(error_sparseLTS))
+# MAE_sparseLTS # 28.27
+# SD_sparseLTS <- sd(error_sparseLTS) 
+# # SD_sparseLTS # 48.88
+# mean_time_sparseLTS <- mean(time_sparseLTS)
+# # mean_time_sparseLTS
+# SD_time_sparseLTS <- sd(time_sparseLTS)
+# # SD_time_sparseLTS
+# mean_number_selected_sparseLTS <- mean(number_selected_sparseLTS)
+# # mean_number_selected_sparseLTS
+# SD_number_selected_sparseLTS <- sd(number_selected_sparseLTS)
+# # SD_number_selected_sparseLTS 
+
+
+#########################################################################################
+ 
+
+# rgrplars
+
+error_rgrplars <- rep(0,number_cancer_cell_lines)
+time_rgrplars <- rep(0,number_cancer_cell_lines)
+number_selected_rgrplars <- rep(0,number_cancer_cell_lines) 
+
+for (i in 1:number_cancer_cell_lines) {
+  set.seed(1000+i)
+  X=data_set[-i,2:c(p+1)]
+  KRT19_protein=data_set[-i,1]
+  time_a<-proc.time()[3]
+  first_rgrplars <- rgrplars(x=X,y=KRT19_protein)
+  time_b <- proc.time()[3]
+  time_rgrplars[i] <- time_b-time_a
+  
+ error_rgrplars[i] <- predict(first_rgrplars,newdata = data_set[i,2:c(p+1)])-KRT19_protein[i]
+ number_selected_rgrplars[i] <- sum(coef(first_rgrplars)[2:c(p+1)]!=0)
+  print(i)
+}
+ # 
+# MAE_rgrplars <- mean(abs(error_rgrplars))
+# MAE_rgrplars # 28.08
+# SD_rgrplars <- sd(error_rgrplars) 
+# # SD_rgrplars # 51.56
+# mean_time_rgrplars <- mean(time_rgrplars)
+# # mean_time_rgrplars
+# SD_time_rgrplars <- sd(time_rgrplars)
+# # SD_time_rgrplars
+# mean_number_selected_rgrplars <- mean(number_selected_rgrplars)
+# # mean_number_selected_rgrplars
+# SD_number_selected_rgrplars <- sd(number_selected_rgrplars)
+# # SD_number_selected_rgrplars 
+
+
+#########################################################################################
+
+
+
