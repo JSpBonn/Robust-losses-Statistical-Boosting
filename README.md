@@ -14,7 +14,7 @@ E.g. for non-adaptive loss functions:
 Gaussian (default for glmboost), Laplace
 
 
-```{r }
+```{R}
 # R code for running an example on a bodyfat data set with different covariates:
 
 source{Robust_quantile_based_adaptive_loss_functions_for_statistical_boosting.R} # loading adaptive loss functions and R-Package "mboost"
