@@ -279,3 +279,56 @@ AdaptCauchy <- function (tau = 0.9829162 , k=NULL, pi=NULL){ #95% efficiency: k=
   )
 }
 ###########################################################################################
+
+# Andrews' Sine:
+AdaptAndrewS <- function (tau = 0.9829162 , k=NULL, pi=NULL){ #95% efficiency: k=1.339 translated to tau=0.8194293
+  k_to_tau <- function(k){
+    return((pnorm(k)-pnorm(-k))) # =1-2*pnorm(-k)
+  }
+  
+  if( !is.null(tau)){
+    if((0<tau)*(tau<=1)){message(paste("using tau = ",tau,sep=""))
+      tau_to_k <- function(tau){
+        to_minimize <- function(k){return(abs(pnorm(k)-pnorm(-k)-tau))}
+        return(optimize(f=to_minimize,interval = c(0.1,8.0),maximum=FALSE)$minimum)
+      }
+      k=tau_to_k(tau)
+      message(paste("corresponding to k = ",k," for standard gaussian distribution",sep=""))
+      pi=1-tau
+      message(paste("corresponding to pi = ", pi,sep=""))
+    } else {stop("tau is a quantile, choose value in [0,1]")}
+  } else{
+    if(!is.null(k)){
+      if(k>0){message(paste("using k = ",k," for standard gaussian distribution",sep=""))
+        tau=k_to_tau(k)
+        pi=1-tau
+        message(paste("corresponding to pi = ",pi,sep=""))
+        message(paste("transferred to tau = ",tau, sep=""))
+      } else {stop("k has to be a positive value")}
+    } else{
+      if(!is.null(pi)){
+        if((0<=pi)*(pi<=1)){  message(paste("using pi = ",pi,sep=""))
+          tau=1-pi
+          tau_to_k <- function(tau){
+            to_minimize <- function(k){return(abs(pnorm(k)-pnorm(-k)-tau))}
+            return(optimize(f=to_minimize,interval = c(0.1,8.0),maximum=FALSE)$minimum)
+          }
+          k=tau_to_k(tau)
+          message(paste("corresponding to k = ", k," for standard gaussian distribution",sep=""))
+          message(paste("transferred to tau = ",tau,sep=""))
+        } else {stop("pi is an amount, choose value in [0,1]")}
+      } 
+    }
+  }
+  
+  Family(ngradient = function(y, f,w = rep(1, length(y))) {
+    d <- quantile(abs(y - f)[rep(1:length(y), w)],probs=tau)
+     (abs(y-f)<=pi*d)*sin(y-f) }, 
+    loss = function(y, f,w = rep(1, length(y))) {
+      d <- quantile(abs(y - f)[rep(1:length(y), w)],probs=tau)
+  (abs(y-f)<=pi*d)*d*(1-cos((y-f)/d)) +(abs(y-f)>pi*d)*2*d},# 
+    offset = function(y,w=rep(1, length(y))){
+      median(y[rep(1:length(y), w)])}
+  )
+}
+###########################################################################################
