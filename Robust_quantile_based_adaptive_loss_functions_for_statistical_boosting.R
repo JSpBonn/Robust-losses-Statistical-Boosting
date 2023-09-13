@@ -281,7 +281,7 @@ AdaptCauchy <- function (tau = 0.9829162 , k=NULL, pi=NULL){ #95% efficiency: k=
 ###########################################################################################
 
 # Andrews' Sine:
-AdaptAndrewS <- function (tau = 0.9829162 , k=NULL, pi=NULL){ #95% efficiency: k=1.339 translated to tau=0.8194293
+AdaptAndrewS <- function (tau =0.8194293 , k=NULL, pi=NULL){ #95% efficiency: k=1.339 translated to tau=0.8194293
   k_to_tau <- function(k){
     return((pnorm(k)-pnorm(-k))) # =1-2*pnorm(-k)
   }
@@ -321,12 +321,12 @@ AdaptAndrewS <- function (tau = 0.9829162 , k=NULL, pi=NULL){ #95% efficiency: k
     }
   }
   
-  Family(ngradient = function(y, f,w = rep(1, length(y))) {
+ Family(ngradient = function(y, f,w = rep(1, length(y))) {
     d <- quantile(abs(y - f)[rep(1:length(y), w)],probs=tau)
-     (abs(y-f)<=pi*d)*sin(y-f) }, 
+    -(abs(y-f)<=pi*d)*sin((y-f)/d)*d }, 
     loss = function(y, f,w = rep(1, length(y))) {
       d <- quantile(abs(y - f)[rep(1:length(y), w)],probs=tau)
-  (abs(y-f)<=pi*d)*d*(1-cos((y-f)/d)) +(abs(y-f)>pi*d)*2*d},# 
+     (abs(y-f)<=pi*d)*(1-cos(1+(y-f)/d)) +(abs(y-f)>pi*d) *2*d },# 
     offset = function(y,w=rep(1, length(y))){
       median(y[rep(1:length(y), w)])}
   )
