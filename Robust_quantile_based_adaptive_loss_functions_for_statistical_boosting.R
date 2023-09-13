@@ -323,10 +323,15 @@ AdaptAndrewS <- function (tau =0.8194293 , k=NULL, pi=NULL){ #95% efficiency: k=
   
  Family(ngradient = function(y, f,w = rep(1, length(y))) {
     d <- quantile(abs(y - f)[rep(1:length(y), w)],probs=tau)
-    -(abs(y-f)<=pi*d)*sin((y-f)/d)*d }, 
+ ifelse( y-f < -3.141593*d, 0, 
+              ifelse( y-f <0, sin((y-f)/d)*d , 
+                      ifelse(y - f <= d*3.141593, sin((y-f)/d)*d,0)))},      
     loss = function(y, f,w = rep(1, length(y))) {
       d <- quantile(abs(y - f)[rep(1:length(y), w)],probs=tau)
-     (abs(y-f)<=pi*d)*(1-cos(1+(y-f)/d)) +(abs(y-f)>pi*d) *2*d },# 
+     #(abs(y-f)<=pi*d)*(1-cos(1+(y-f)/d)) +(abs(y-f)>pi*d) *2*d },# 
+         ifelse( y-f < -3.141593*d, 2*d, 
+              ifelse( y-f <0, (1-cos(1+(y-f)/d)), 
+                      ifelse(y - f <= d*3.141593, (1-cos(1+(y-f)/d)),2*d)))},
     offset = function(y,w=rep(1, length(y))){
       median(y[rep(1:length(y), w)])}
   )
